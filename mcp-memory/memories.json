@@ -1,0 +1,12 @@
+{
+  "student123": [
+    {
+      "timestamp": "2026-06-10T08:54:25.219Z",
+      "memory": "Has an allergy to pizza"
+    },
+    {
+      "timestamp": "2026-06-10T08:54:25.225Z",
+      "memory": "Has an allergy to peanuts"
+    }
+  ]
+}
