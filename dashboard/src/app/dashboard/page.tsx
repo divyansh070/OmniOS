@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
+import { Menu, X, Plus, Trash2, LogOut, Sparkles, User } from "lucide-react";
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
@@ -12,6 +13,7 @@ export default function Dashboard() {
 
   const [chats, setChats] = useState<any[]>([]);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -143,12 +145,21 @@ export default function Dashboard() {
       
       <main className="flex-1 max-w-7xl mx-auto w-full p-4 md:p-8 relative z-10 flex flex-col min-h-0">
         <header className="flex items-center justify-between py-6 border-b border-white/5 mb-8 shrink-0">
-          <div>
-            <h1 className="text-3xl font-light tracking-tight text-white flex items-center gap-3">
-              <span className="bg-gradient-to-r from-indigo-400 to-cyan-400 text-transparent bg-clip-text font-semibold">Omni</span> 
-              OS
-            </h1>
-            <p className="text-sm text-slate-400 mt-1">Unified Campus Dashboard</p>
+          <div className="flex items-center gap-3">
+            <button 
+              onClick={() => setIsSidebarOpen(true)} 
+              className="lg:hidden p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white border border-white/10 transition-colors"
+              title="Open menu"
+            >
+              <Menu className="w-5 h-5" />
+            </button>
+            <div>
+              <h1 className="text-2xl md:text-3xl font-light tracking-tight text-white flex items-center gap-3">
+                <span className="bg-gradient-to-r from-indigo-400 to-cyan-400 text-transparent bg-clip-text font-semibold">Omni</span> 
+                OS
+              </h1>
+              <p className="text-xs md:text-sm text-slate-400 mt-1">Unified Campus Dashboard</p>
+            </div>
           </div>
           <div className="hidden md:flex items-center gap-4">
              {status === "authenticated" && (
@@ -176,7 +187,7 @@ export default function Dashboard() {
                    <p className="text-sm font-medium text-white">{session.user?.name}</p>
                    <p className="text-xs text-indigo-300">{(session.user as any)?.major}</p>
                  </div>
-                 <button onClick={() => signOut()} className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-white border border-white/10 transition-colors">
+                 <button onClick={() => signOut()} className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-white border border-white/10 transition-colors cursor-pointer">
                    Sign Out
                  </button>
                </div>
@@ -193,12 +204,89 @@ export default function Dashboard() {
           </div>
         </header>
 
+        {/* Mobile Sidebar overlay */}
+        {isSidebarOpen && (
+          <div 
+            className="fixed inset-0 z-40 bg-black/60 backdrop-blur-sm lg:hidden"
+            onClick={() => setIsSidebarOpen(false)}
+          />
+        )}
+
+        {/* Mobile Sidebar drawer */}
+        <div className={`fixed inset-y-0 left-0 z-50 w-72 bg-slate-950/95 border-r border-white/10 p-6 flex flex-col gap-6 transform transition-transform duration-300 backdrop-blur-xl lg:hidden ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+          <div className="flex items-center justify-between">
+            <span className="text-xl font-semibold text-white tracking-tight flex items-center gap-2">
+              <Sparkles className="text-cyan-400 w-5 h-5" />
+              Omni<span className="text-slate-400 font-light">OS</span>
+            </span>
+            <button onClick={() => setIsSidebarOpen(false)} className="p-2 rounded-xl bg-white/5 hover:bg-white/10 text-white border border-white/10" title="Close menu">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+
+          <button onClick={() => { createNewChat(); setIsSidebarOpen(false); }} className="w-full py-3 px-4 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 text-indigo-300 font-medium flex items-center gap-2 justify-center transition-all cursor-pointer">
+            <Plus className="w-4 h-4" />
+            New Chat
+          </button>
+
+          <div className="flex-1 overflow-y-auto space-y-2 custom-scrollbar">
+            <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3 px-2">Recent Chats</h3>
+            {chats.length === 0 ? (
+              <p className="text-xs text-slate-500 px-2 italic">No chats yet.</p>
+            ) : (
+              chats.map((chat) => (
+                <div key={chat.id} onClick={() => { switchChat(chat.id); setIsSidebarOpen(false); }} className={`group flex items-center justify-between p-3 rounded-xl cursor-pointer transition-colors ${activeChatId === chat.id ? 'bg-indigo-500/20 border border-indigo-500/30' : 'hover:bg-white/5 border border-transparent'}`}>
+                   <div className="flex items-center gap-3 overflow-hidden">
+                      <span className="text-lg opacity-70">💬</span>
+                      <span className={`text-sm truncate ${activeChatId === chat.id ? 'text-indigo-200' : 'text-slate-300'}`}>{chat.title}</span>
+                   </div>
+                   <button onClick={(e) => deleteChat(chat.id, e)} className="text-slate-500 hover:text-red-400 transition-all p-1 cursor-pointer">
+                      <Trash2 className="w-4 h-4" />
+                   </button>
+                </div>
+              ))
+            )}
+          </div>
+
+          {status === "authenticated" && (
+            <div className="border-t border-white/5 pt-6 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-indigo-500/10 border border-indigo-500/30 flex items-center justify-center text-indigo-400">
+                  <User className="w-5 h-5" />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-white">{session.user?.name}</p>
+                  <p className="text-xs text-indigo-300">{(session.user as any)?.major}</p>
+                </div>
+              </div>
+
+              <div className="flex flex-wrap gap-2 pt-2">
+                {[
+                  { name: "Library", icon: "📚" },
+                  { name: "Cafeteria", icon: "🍔" },
+                  { name: "Events", icon: "🎉" },
+                  { name: "Academics", icon: "🎓" }
+                ].map((sys) => (
+                  <div key={sys.name} className="flex items-center gap-1 px-2 py-1 rounded-full bg-white/5 border border-white/10 text-[10px] text-slate-300">
+                    <span>{sys.icon}</span>
+                    <span>{sys.name}</span>
+                  </div>
+                ))}
+              </div>
+
+              <button onClick={() => signOut()} className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-white border border-white/10 transition-colors flex items-center justify-center gap-2 cursor-pointer">
+                <LogOut className="w-4 h-4" /> Sign Out
+              </button>
+            </div>
+          )}
+        </div>
+
         <div className="flex-1 grid grid-cols-1 lg:grid-cols-4 gap-8 min-h-0 pb-4">
           
-          {/* Left Panel: Chat History Sidebar */}
+          {/* Left Panel: Chat History Sidebar (Desktop only) */}
           <div className="hidden lg:flex flex-col gap-4 col-span-1 bg-white/[0.01] rounded-3xl border border-white/5 p-4 relative overflow-hidden backdrop-blur-sm">
-             <button onClick={createNewChat} className="w-full py-3 px-4 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 text-indigo-300 font-medium flex items-center gap-2 justify-center transition-all">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" /></svg>
+             <button onClick={createNewChat} className="w-full py-3 px-4 rounded-xl bg-indigo-500/10 hover:bg-indigo-500/20 border border-indigo-500/20 text-indigo-300 font-medium flex items-center gap-2 justify-center transition-all cursor-pointer">
+                <Plus className="w-5 h-5" />
                 New Chat
              </button>
              
@@ -213,8 +301,8 @@ export default function Dashboard() {
                           <span className="text-lg opacity-70">💬</span>
                           <span className={`text-sm truncate ${activeChatId === chat.id ? 'text-indigo-200' : 'text-slate-300 group-hover:text-white'}`}>{chat.title}</span>
                        </div>
-                       <button onClick={(e) => deleteChat(chat.id, e)} className="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-400 transition-all p-1">
-                          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                       <button onClick={(e) => deleteChat(chat.id, e)} className="opacity-0 group-hover:opacity-100 text-slate-500 hover:text-red-400 transition-all p-1 cursor-pointer">
+                          <Trash2 className="w-4 h-4" />
                        </button>
                     </div>
                   ))

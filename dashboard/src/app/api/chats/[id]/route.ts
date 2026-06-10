@@ -19,8 +19,9 @@ function writeChats(data: any) {
   fs.writeFileSync(CHATS_FILE, JSON.stringify(data, null, 2));
 }
 
-export async function PUT(req: Request, { params }: { params: { id: string } }) {
+export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const resolvedParams = await params;
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -30,7 +31,7 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
     const body = await req.json();
     const allChats = readChats();
     
-    const chatIndex = allChats.findIndex((c: any) => c.id === params.id && c.userId === userId);
+    const chatIndex = allChats.findIndex((c: any) => c.id === resolvedParams.id && c.userId === userId);
     
     if (chatIndex === -1) {
       return NextResponse.json({ error: "Chat not found" }, { status: 404 });
@@ -58,8 +59,9 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
   }
 }
 
-export async function DELETE(req: Request, { params }: { params: { id: string } }) {
+export async function DELETE(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
+    const resolvedParams = await params;
     const session = await getServerSession(authOptions);
     if (!session?.user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
@@ -68,7 +70,7 @@ export async function DELETE(req: Request, { params }: { params: { id: string } 
     const userId = (session.user as any).id;
     let allChats = readChats();
     
-    allChats = allChats.filter((c: any) => !(c.id === params.id && c.userId === userId));
+    allChats = allChats.filter((c: any) => !(c.id === resolvedParams.id && c.userId === userId));
     writeChats(allChats);
 
     return NextResponse.json({ success: true });

@@ -57,7 +57,7 @@ export async function POST(req: Request) {
             name: "get_memories",
             arguments: { studentId }
           });
-          const memoryText = memoryResult.content.map((c: any) => c.text).join("");
+          const memoryText = (memoryResult.content as any).map((c: any) => c.text).join("");
           const memoryData = JSON.parse(memoryText);
           if (memoryData.length > 0) {
             baseInstruction += `\n\nSAVED MEMORIES ABOUT USER:\n${memoryData.map((m: any) => "- " + m.memory).join("\n")}\nIMPORTANT: Use the 'save_memory' tool proactively to save any new facts or preferences the user shares.`;
@@ -119,7 +119,7 @@ export async function POST(req: Request) {
                     name: mapping.originalName,
                     arguments: functionCall.args
                   });
-                  const extractedText = toolResult.content.map((c: any) => c.text).join("\n");
+                  const extractedText = (toolResult.content as any).map((c: any) => c.text).join("\n");
                   functionResponses.push({
                      functionResponse: { name: functionCall.name, response: { result: extractedText } }
                   });
