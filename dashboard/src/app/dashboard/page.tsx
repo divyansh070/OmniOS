@@ -56,6 +56,35 @@ export default function Dashboard() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [showChatHistory, setShowChatHistory] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(380);
+  const [isResizing, setIsResizing] = useState(false);
+
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!isResizing) return;
+      const newWidth = window.innerWidth - e.clientX;
+      if (newWidth >= 300 && newWidth <= 800) {
+        setSidebarWidth(newWidth);
+      }
+    };
+
+    const handleMouseUp = () => {
+      setIsResizing(false);
+    };
+
+    if (isResizing) {
+      document.body.style.userSelect = "none";
+      document.addEventListener("mousemove", handleMouseMove);
+      document.addEventListener("mouseup", handleMouseUp);
+    } else {
+      document.body.style.userSelect = "auto";
+    }
+
+    return () => {
+      document.removeEventListener("mousemove", handleMouseMove);
+      document.removeEventListener("mouseup", handleMouseUp);
+    };
+  }, [isResizing]);
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -477,7 +506,17 @@ export default function Dashboard() {
       </main>
 
       {/* Right Sidebar: Assistant & Chat History */}
-      <aside className={`w-[380px] backdrop-blur-xl border-l flex flex-col z-20 shadow-[-4px_0_24px_rgba(0,0,0,0.04)] hidden lg:flex transition-colors relative overflow-hidden ${theme.bgSidebar}`}>
+      <aside 
+        style={{ width: sidebarWidth }}
+        className={`shrink-0 backdrop-blur-xl border-l flex flex-col z-20 shadow-[-4px_0_24px_rgba(0,0,0,0.04)] hidden lg:flex transition-colors relative overflow-hidden ${theme.bgSidebar}`}
+      >
+        {/* Resizer Handle */}
+        <div 
+          onMouseDown={() => setIsResizing(true)}
+          className={`absolute left-0 top-0 w-2 h-full cursor-col-resize z-50 flex items-center justify-center hover:bg-indigo-500/10 transition-colors group ${isResizing ? 'bg-indigo-500/20' : ''}`}
+        >
+          <div className="h-8 w-1 rounded-full bg-slate-300 dark:bg-slate-600 group-hover:bg-indigo-400 transition-colors" />
+        </div>
         
         {/* Header */}
         <div className={`h-16 border-b flex items-center justify-between px-6 z-30 transition-colors ${theme.bgHeader}`}>
