@@ -3,6 +3,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useSession, signIn, signOut } from "next-auth/react";
 import { Menu, X, Plus, Trash2, LogOut, Sparkles, User } from "lucide-react";
+import Link from "next/link";
 
 export default function Dashboard() {
   const { data: session, status } = useSession();
@@ -154,10 +155,10 @@ export default function Dashboard() {
               <Menu className="w-5 h-5" />
             </button>
             <div>
-              <h1 className="text-2xl md:text-3xl font-light tracking-tight text-white flex items-center gap-3">
+              <Link href="/" className="text-2xl md:text-3xl font-light tracking-tight text-white flex items-center gap-3 cursor-pointer hover:opacity-80 transition-opacity">
                 <span className="bg-gradient-to-r from-indigo-400 to-cyan-400 text-transparent bg-clip-text font-semibold">Omni</span> 
                 OS
-              </h1>
+              </Link>
               <p className="text-xs md:text-sm text-slate-400 mt-1">Unified Campus Dashboard</p>
             </div>
           </div>
@@ -187,7 +188,7 @@ export default function Dashboard() {
                    <p className="text-sm font-medium text-white">{session.user?.name}</p>
                    <p className="text-xs text-indigo-300">{(session.user as any)?.major}</p>
                  </div>
-                 <button onClick={() => signOut()} className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-white border border-white/10 transition-colors cursor-pointer">
+                 <button onClick={() => signOut({ callbackUrl: '/' })} className="px-4 py-2 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-white border border-white/10 transition-colors cursor-pointer">
                    Sign Out
                  </button>
                </div>
@@ -274,7 +275,7 @@ export default function Dashboard() {
                 ))}
               </div>
 
-              <button onClick={() => signOut()} className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-white border border-white/10 transition-colors flex items-center justify-center gap-2 cursor-pointer">
+              <button onClick={() => signOut({ callbackUrl: '/' })} className="w-full py-2.5 rounded-xl bg-white/5 hover:bg-white/10 text-xs text-white border border-white/10 transition-colors flex items-center justify-center gap-2 cursor-pointer">
                 <LogOut className="w-4 h-4" /> Sign Out
               </button>
             </div>
