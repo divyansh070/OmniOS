@@ -1,15 +1,15 @@
 "use client";
 
-import { useState } from "react";
-import { signIn } from "next-auth/react";
+import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { signIn } from "next-auth/react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ArrowLeft, Sparkles, Loader2 } from "lucide-react";
-import { useEffect } from "react";
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
+  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -23,17 +23,36 @@ export default function LoginPage() {
     setIsLoading(true);
     setError("");
 
-    const res = await signIn("credentials", {
-      redirect: false,
-      email,
-      password,
-    });
+    try {
+      // 1. Call our custom signup API
+      const res = await fetch("/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ username, email, password }),
+      });
 
-    if (res?.error) {
-      setError("Invalid email or password.");
-      setIsLoading(false);
-    } else {
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to sign up");
+      }
+
+      // 2. Automatically sign them in using NextAuth
+      const signInRes = await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
+      });
+
+      if (signInRes?.error) {
+        throw new Error("Account created but failed to log in automatically.");
+      }
+
+      // 3. Redirect to Dashboard
       router.push("/dashboard");
+    } catch (err: any) {
+      setError(err.message);
+      setIsLoading(false);
     }
   };
 
@@ -83,14 +102,27 @@ export default function LoginPage() {
           <div className="bg-white/[0.03] border border-white/10 p-8 rounded-3xl backdrop-blur-xl shadow-2xl relative overflow-hidden">
             <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-indigo-500/50 to-transparent"></div>
             
-            <div className="flex items-center gap-2 mb-8 justify-center">
+            <div className="flex items-center gap-2 mb-2 justify-center">
               <Sparkles className="text-cyan-400 w-6 h-6" />
               <span className="text-2xl font-semibold text-white tracking-tight">Omni<span className="text-slate-400 font-light">OS</span></span>
             </div>
+            <p className="text-center text-slate-400 text-sm mb-8">Create your student account</p>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Email Address</label>
+                <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Username</label>
+                <input
+                  type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  placeholder="spaceexplorer"
+                  className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-slate-400 uppercase tracking-wider mb-2">Email</label>
                 <input
                   type="email"
                   value={email}
@@ -110,6 +142,7 @@ export default function LoginPage() {
                   placeholder="••••••••"
                   className="w-full bg-black/20 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-slate-600 focus:outline-none focus:border-indigo-500/50 focus:ring-1 focus:ring-indigo-500/50 transition-all"
                   required
+                  minLength={6}
                 />
               </div>
 
@@ -122,15 +155,15 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={isLoading}
-                className="w-full py-3.5 px-4 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-medium transition-all shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_30px_rgba(99,102,241,0.5)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mt-4"
+                className="w-full py-3.5 px-4 rounded-xl bg-indigo-500 hover:bg-indigo-400 text-white font-medium transition-all shadow-[0_0_20px_rgba(99,102,241,0.3)] hover:shadow-[0_0_30px_rgba(99,102,241,0.5)] disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center mt-6"
               >
-                {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Access Dashboard"}
+                {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Create Account"}
               </button>
             </form>
 
             <div className="mt-6 pt-6 border-t border-white/5 text-center">
               <p className="text-sm text-slate-400">
-                Don't have an account? <Link href="/signup" className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors">Sign up</Link>
+                Already have an account? <Link href="/login" className="text-indigo-400 hover:text-indigo-300 font-medium transition-colors">Log in</Link>
               </p>
             </div>
           </div>
