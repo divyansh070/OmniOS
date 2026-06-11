@@ -135,17 +135,17 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="flex h-screen bg-slate-50 overflow-hidden font-sans text-slate-800">
+    <div className="flex h-screen bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-indigo-50/50 via-slate-50 to-slate-100 overflow-hidden font-sans text-slate-800">
       
       {/* Left Sidebar */}
       <aside className="w-64 bg-white border-r border-slate-200 flex flex-col hidden md:flex z-10 shadow-sm">
         <div className="p-6">
           <Link href="/" className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-md shadow-indigo-500/20">
-              A
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 via-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-md shadow-indigo-500/20">
+              O
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 text-transparent bg-clip-text tracking-tight">
-              AURA
+            <span className="text-xl font-bold bg-gradient-to-r from-cyan-500 via-indigo-500 to-purple-500 text-transparent bg-clip-text tracking-tight">
+              OmniOS
             </span>
           </Link>
         </div>
@@ -214,7 +214,7 @@ export default function Dashboard() {
           <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 max-w-5xl mx-auto pb-10">
             
             {/* Widget: Today's Classes */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col relative h-[380px]">
+            <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white shadow-lg shadow-slate-200/50 overflow-hidden flex flex-col relative h-[380px]">
               <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-blue-50 text-blue-600 rounded-lg"><BookOpen className="w-4 h-4" /></div>
@@ -245,7 +245,7 @@ export default function Dashboard() {
             </div>
 
             {/* Widget: Cafeteria Menu */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col relative h-[380px]">
+            <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white shadow-lg shadow-slate-200/50 overflow-hidden flex flex-col relative h-[380px]">
               <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-orange-50 text-orange-600 rounded-lg"><Coffee className="w-4 h-4" /></div>
@@ -273,7 +273,7 @@ export default function Dashboard() {
             </div>
 
             {/* Widget: Upcoming Events */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col relative h-[350px]">
+            <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white shadow-lg shadow-slate-200/50 overflow-hidden flex flex-col relative h-[350px]">
               <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-pink-50 text-pink-600 rounded-lg"><Calendar className="w-4 h-4" /></div>
@@ -303,7 +303,7 @@ export default function Dashboard() {
             </div>
 
             {/* Widget: Interdisciplinary Picks */}
-            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col relative h-[350px]">
+            <div className="bg-white/80 backdrop-blur-xl rounded-3xl border border-white shadow-lg shadow-slate-200/50 overflow-hidden flex flex-col relative h-[350px]">
               <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-slate-50/50">
                 <div className="flex items-center gap-3">
                   <div className="p-2 bg-violet-50 text-violet-600 rounded-lg"><BookOpen className="w-4 h-4" /></div>
@@ -335,8 +335,8 @@ export default function Dashboard() {
       <aside className="w-[380px] bg-white border-l border-slate-200 flex flex-col z-20 shadow-[-4px_0_24px_rgba(0,0,0,0.02)] hidden lg:flex">
         <div className="h-16 border-b border-slate-200 flex items-center justify-between px-6 bg-slate-50/50">
           <div className="flex items-center gap-3">
-            <div className="p-1.5 bg-indigo-100 text-indigo-600 rounded-md"><Sparkles className="w-4 h-4" /></div>
-            <h2 className="font-semibold text-slate-800 tracking-tight">AURA ASSISTANT</h2>
+            <div className="p-1.5 bg-gradient-to-br from-cyan-400 via-indigo-500 to-purple-500 text-white rounded-md"><Sparkles className="w-4 h-4" /></div>
+            <h2 className="font-semibold text-slate-800 tracking-tight">OMNIOS AI</h2>
           </div>
           <div className="flex gap-2">
             <button className="p-1.5 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-md transition-colors"><Plus className="w-4 h-4" onClick={() => { setActiveChatId(null); setMessages([]); }} /></button>
@@ -347,11 +347,11 @@ export default function Dashboard() {
         <div className="flex-1 overflow-y-auto p-6 custom-scrollbar bg-white">
           {messages.length === 0 ? (
             <div className="h-full flex flex-col items-center justify-center text-center px-4">
-              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-indigo-400 to-purple-500 shadow-xl shadow-indigo-500/20 flex items-center justify-center mb-6">
-                <Bot className="w-10 h-10 text-white" />
+              <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-cyan-400 via-indigo-500 to-purple-500 shadow-xl shadow-indigo-500/20 flex items-center justify-center mb-6">
+                <Sparkles className="w-10 h-10 text-white" />
               </div>
               <p className="text-sm text-slate-400 leading-relaxed font-medium">
-                I am AURA. Ask me anything about library books, cafeteria menus, events, or your academic schedule.
+                I am OmniOS AI. Ask me anything about library books, cafeteria menus, events, or your academic schedule.
               </p>
             </div>
           ) : (
@@ -397,7 +397,7 @@ export default function Dashboard() {
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
-              placeholder="Ask AURA..."
+              placeholder="Ask OmniOS..."
               className="flex-1 bg-white border border-slate-300 text-slate-800 text-sm rounded-full py-3 px-5 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400 transition-all shadow-sm placeholder-slate-400 font-medium"
               disabled={isLoading}
             />
