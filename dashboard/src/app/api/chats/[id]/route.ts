@@ -1,23 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../auth/[...nextauth]/route";
-import fs from "fs";
-import path from "path";
-
-const CHATS_FILE = path.resolve("./chats.json");
-
-function readChats() {
-  try {
-    if (!fs.existsSync(CHATS_FILE)) return [];
-    return JSON.parse(fs.readFileSync(CHATS_FILE, "utf-8"));
-  } catch (e) {
-    return [];
-  }
-}
-
-function writeChats(data: any) {
-  fs.writeFileSync(CHATS_FILE, JSON.stringify(data, null, 2));
-}
+import { supabase } from "@/lib/supabase";
 
 export async function PUT(req: Request, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -29,31 +13,49 @@ export async function PUT(req: Request, { params }: { params: Promise<{ id: stri
 
     const userId = (session.user as any).id;
     const body = await req.json();
-    const allChats = readChats();
-    
-    const chatIndex = allChats.findIndex((c: any) => c.id === resolvedParams.id && c.userId === userId);
-    
-    if (chatIndex === -1) {
+
+    // Fetch existing chat to check ownership and current title
+    const { data: existingChat, error: fetchError } = await supabase
+      .from('chats')
+      .select('*')
+      .eq('id', resolvedParams.id)
+      .eq('user_id', userId)
+      .single();
+
+    if (fetchError || !existingChat) {
       return NextResponse.json({ error: "Chat not found" }, { status: 404 });
     }
-    
-    const chat = allChats[chatIndex];
-    chat.messages = body.messages || chat.messages;
-    
+
+    let updatedTitle = existingChat.title;
+    const updatedMessages = body.messages || existingChat.messages;
+
     // Auto-generate title if this is the first exchange
-    if (chat.title === "New Chat" && chat.messages.length > 0) {
-      const firstUserMsg = chat.messages.find((m: any) => m.role === "user")?.content;
+    if (existingChat.title === "New Chat" && updatedMessages.length > 0) {
+      const firstUserMsg = updatedMessages.find((m: any) => m.role === "user")?.content;
       if (firstUserMsg) {
-        // Very basic title extraction (first 3 words)
         const words = firstUserMsg.split(" ");
-        chat.title = words.slice(0, 4).join(" ") + (words.length > 4 ? "..." : "");
+        updatedTitle = words.slice(0, 4).join(" ") + (words.length > 4 ? "..." : "");
       }
     }
-    
-    chat.updatedAt = new Date().toISOString();
-    writeChats(allChats);
 
-    return NextResponse.json(chat);
+    const { data: updatedChat, error: updateError } = await supabase
+      .from('chats')
+      .update({
+        messages: updatedMessages,
+        title: updatedTitle,
+        updated_at: new Date().toISOString()
+      })
+      .eq('id', resolvedParams.id)
+      .select()
+      .single();
+
+    if (updateError) throw updateError;
+
+    return NextResponse.json({
+      ...updatedChat,
+      userId: updatedChat.user_id,
+      updatedAt: updatedChat.updated_at
+    });
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -68,10 +70,14 @@ export async function DELETE(req: Request, { params }: { params: Promise<{ id: s
     }
 
     const userId = (session.user as any).id;
-    let allChats = readChats();
     
-    allChats = allChats.filter((c: any) => !(c.id === resolvedParams.id && c.userId === userId));
-    writeChats(allChats);
+    const { error } = await supabase
+      .from('chats')
+      .delete()
+      .eq('id', resolvedParams.id)
+      .eq('user_id', userId);
+
+    if (error) throw error;
 
     return NextResponse.json({ success: true });
   } catch (error: any) {

@@ -1,23 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]/route";
-import fs from "fs";
-import path from "path";
-
-const CHATS_FILE = path.resolve("./chats.json");
-
-function readChats() {
-  try {
-    if (!fs.existsSync(CHATS_FILE)) return [];
-    return JSON.parse(fs.readFileSync(CHATS_FILE, "utf-8"));
-  } catch (e) {
-    return [];
-  }
-}
-
-function writeChats(data: any) {
-  fs.writeFileSync(CHATS_FILE, JSON.stringify(data, null, 2));
-}
+import { supabase } from "@/lib/supabase";
 
 export const dynamic = "force-dynamic";
 
@@ -29,10 +13,23 @@ export async function GET(req: Request) {
     }
 
     const userId = (session.user as any).id;
-    const allChats = readChats();
-    const userChats = allChats.filter((c: any) => c.userId === userId).sort((a: any, b: any) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime());
+    
+    const { data: userChats, error } = await supabase
+      .from('chats')
+      .select('*')
+      .eq('user_id', userId)
+      .order('updated_at', { ascending: false });
 
-    return NextResponse.json(userChats);
+    if (error) throw error;
+
+    // Map database fields to the frontend expected format if needed
+    const formattedChats = userChats.map(chat => ({
+      ...chat,
+      userId: chat.user_id,
+      updatedAt: chat.updated_at
+    }));
+
+    return NextResponse.json(formattedChats);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
@@ -46,21 +43,30 @@ export async function POST(req: Request) {
     }
 
     const userId = (session.user as any).id;
-    const allChats = readChats();
     
-    const newChat = {
-      id: Date.now().toString(),
-      userId,
-      title: "New Chat",
-      messages: [],
-      updatedAt: new Date().toISOString()
-    };
-    
-    allChats.push(newChat);
-    writeChats(allChats);
+    const { data: newChat, error } = await supabase
+      .from('chats')
+      .insert([
+        { 
+          user_id: userId,
+          title: "New Chat",
+          messages: []
+        }
+      ])
+      .select()
+      .single();
 
-    return NextResponse.json(newChat);
+    if (error) throw error;
+
+    const formattedChat = {
+      ...newChat,
+      userId: newChat.user_id,
+      updatedAt: newChat.updated_at
+    };
+
+    return NextResponse.json(formattedChat);
   } catch (error: any) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
+

@@ -11,37 +11,37 @@ app.use(cors());
 
 const server = new McpServer({ name: "mcp-memory", version: "1.0.0" });
 
-const MEMORY_FILE = path.resolve("./memories.json");
+import { createClient } from "@supabase/supabase-js";
 
-function readMemories() {
-  try {
-    if (!fs.existsSync(MEMORY_FILE)) return {};
-    return JSON.parse(fs.readFileSync(MEMORY_FILE, "utf-8"));
-  } catch (e) {
-    return {};
-  }
-}
-
-function writeMemories(data) {
-  fs.writeFileSync(MEMORY_FILE, JSON.stringify(data, null, 2));
-}
+const supabaseUrl = process.env.SUPABASE_URL || '';
+const supabaseAnonKey = process.env.SUPABASE_ANON_KEY || '';
+const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 server.tool("save_memory", "Save a fact, preference, or memory about the user", {
   studentId: z.string().describe("The ID of the student"),
   memory: z.string().describe("The fact to remember (e.g. 'Is allergic to peanuts', 'Prefers studying in the morning')")
 }, async ({ studentId, memory }) => {
-  const data = readMemories();
-  if (!data[studentId]) data[studentId] = [];
-  data[studentId].push({ timestamp: new Date().toISOString(), memory });
-  writeMemories(data);
+  const { error } = await supabase
+    .from('memories')
+    .insert([{ student_id: studentId, memory }]);
+    
+  if (error) {
+    return { content: [{ type: "text", text: `Failed to save memory: ${error.message}` }] };
+  }
   return { content: [{ type: "text", text: "Memory saved successfully." }] };
 });
 
 server.tool("get_memories", "Get all saved memories for a student", {
   studentId: z.string().describe("The ID of the student")
 }, async ({ studentId }) => {
-  const data = readMemories();
-  const memories = data[studentId] || [];
+  const { data: memories, error } = await supabase
+    .from('memories')
+    .select('*')
+    .eq('student_id', studentId);
+    
+  if (error) {
+    return { content: [{ type: "text", text: `Failed to retrieve memories: ${error.message}` }] };
+  }
   return { content: [{ type: "text", text: JSON.stringify(memories, null, 2) }] };
 });
 
