@@ -4,7 +4,8 @@
   "description": "Consolidated launchpad for OmniOS MCP microservices on Render",
   "main": "server.js",
   "workspaces": [
-    "mcp-*"
+    "mcp-*",
+    "dashboard"
   ],
   "scripts": {
     "start": "node server.js",
