@@ -62,7 +62,7 @@ export default function Dashboard() {
   useEffect(() => {
     const handleMouseMove = (e: MouseEvent) => {
       if (!isResizing) return;
-      const newWidth = window.innerWidth - e.clientX;
+      const newWidth = e.clientX - 256; // 256px is the width of the nav sidebar
       if (newWidth >= 300 && newWidth <= 800) {
         setSidebarWidth(newWidth);
       }
@@ -206,7 +206,6 @@ export default function Dashboard() {
         body: JSON.stringify({ messages: [...newMessages, { role: "assistant", content: assistantMessage }] }),
       });
 
-      // Refresh chat list to ensure names are updated
       fetchChats();
 
     } catch (error) {
@@ -236,8 +235,8 @@ export default function Dashboard() {
   return (
     <div className={`flex h-screen overflow-hidden font-sans transition-colors duration-300 ${theme.bgApp} ${isDarkMode ? 'dark' : ''}`}>
       
-      {/* Left Sidebar */}
-      <aside className={`w-64 backdrop-blur-xl border-r shadow-lg flex flex-col hidden md:flex z-10 relative transition-colors duration-300 ${theme.bgSidebar}`}>
+      {/* 1. Left Sidebar (Nav) */}
+      <aside className={`w-64 shrink-0 backdrop-blur-xl border-r shadow-lg flex flex-col hidden md:flex z-10 relative transition-colors duration-300 ${theme.bgSidebar}`}>
         <div className="p-6">
           <Link href="/" className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-400 via-indigo-500 to-purple-500 flex items-center justify-center text-white font-bold shadow-md shadow-indigo-500/20">
@@ -295,229 +294,11 @@ export default function Dashboard() {
         </div>
       </aside>
 
-      {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 relative z-0">
-        {/* Top Navbar */}
-        <header className={`h-16 backdrop-blur-md border-b flex items-center justify-end px-6 shadow-sm z-30 sticky top-0 transition-colors ${theme.bgHeader}`}>
-          <div className="flex items-center gap-4 text-slate-500 relative">
-            
-            {/* Notifications Dropdown */}
-            <div className="relative">
-              <button 
-                onClick={() => setShowNotifications(!showNotifications)}
-                className={`p-2 rounded-full transition-colors relative ${theme.btnHover} ${isDarkMode ? 'text-slate-300' : 'text-slate-500'}`}
-              >
-                <Bell className="w-5 h-5" />
-                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 border border-white"></span>
-              </button>
-              
-              {showNotifications && (
-                <div className={`absolute right-0 mt-2 w-80 rounded-2xl shadow-xl border overflow-hidden z-50 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
-                  <div className={`p-4 border-b font-semibold flex justify-between items-center ${isDarkMode ? 'border-slate-700 text-slate-100' : 'border-slate-100 text-slate-800'}`}>
-                    Notifications
-                    <span className="text-xs bg-indigo-500/10 text-indigo-500 px-2 py-1 rounded-md">2 New</span>
-                  </div>
-                  <div className="divide-y divide-slate-100 dark:divide-slate-700">
-                    <div className={`p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                      <p className="text-sm font-medium"><span className="text-pink-500">Event Update:</span> Tech Innovation Summit has been moved to the Main Auditorium.</p>
-                      <p className="text-[10px] text-slate-400 mt-1">10 mins ago</p>
-                    </div>
-                    <div className={`p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
-                      <p className="text-sm font-medium"><span className="text-blue-500">Academics:</span> CS 301 Data Structures begins in 15 minutes.</p>
-                      <p className="text-[10px] text-slate-400 mt-1">1 hour ago</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* Theme Toggle */}
-            <button 
-              onClick={() => setIsDarkMode(!isDarkMode)}
-              className={`p-2 rounded-full transition-colors ${theme.btnHover} ${isDarkMode ? 'text-slate-300' : 'text-slate-500'}`}
-            >
-              {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-            </button>
-            
-            {/* Profile Dropdown */}
-            <div className="relative">
-              <button 
-                onClick={() => setShowProfile(!showProfile)}
-                className={`w-8 h-8 rounded-full border flex items-center justify-center transition-colors ${isDarkMode ? 'border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700' : 'border-slate-300 bg-white/50 text-slate-500 hover:bg-white'}`}
-              >
-                <UserIcon className="w-4 h-4" />
-              </button>
-
-              {showProfile && (
-                <div className={`absolute right-0 mt-2 w-48 rounded-xl shadow-xl border overflow-hidden z-50 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
-                  <div className={`p-4 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
-                    <p className={`text-sm font-bold ${theme.textHeading}`}>{session?.user?.name}</p>
-                    <p className={`text-xs ${theme.textSub}`}>{(session?.user as any)?.major || "Student"}</p>
-                  </div>
-                  <div className="p-2">
-                    <button onClick={() => signOut({ callbackUrl: '/' })} className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg text-red-500 ${isDarkMode ? 'hover:bg-slate-700' : 'hover:bg-red-50'} transition-colors`}>
-                      <LogOut className="w-4 h-4" /> Sign Out
-                    </button>
-                  </div>
-                </div>
-              )}
-            </div>
-
-          </div>
-        </header>
-
-        {/* Dashboard Asymmetric Layout */}
-        <div className="flex-1 overflow-y-auto p-6 lg:p-8 custom-scrollbar relative z-0">
-          <div className="flex flex-col xl:flex-row gap-6 max-w-6xl mx-auto pb-10">
-            
-            {/* LEFT COLUMN */}
-            <div className="flex flex-col gap-6 xl:w-7/12">
-              
-              {/* Widget: Today's Classes */}
-              <div className={`backdrop-blur-xl rounded-3xl border shadow-lg overflow-hidden flex flex-col relative flex-1 min-h-[300px] transition-colors ${theme.bgWidget}`}>
-                <div className={`p-5 border-b flex items-center justify-between bg-gradient-to-r from-blue-500/10 to-transparent ${isDarkMode ? 'border-slate-700' : 'border-white'}`}>
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-blue-500/20 text-blue-500 rounded-xl shadow-sm"><BookOpen className="w-4 h-4" /></div>
-                    <h2 className={`font-semibold ${theme.textHeading}`}>Today's Schedule</h2>
-                  </div>
-                  <span className="text-xs font-semibold text-blue-500 bg-blue-500/10 px-2 py-1 rounded-md">Academics</span>
-                </div>
-                <div className="p-6 overflow-y-auto custom-scrollbar flex-1 relative">
-                  <div className="absolute top-6 bottom-6 left-[39px] w-0.5 bg-slate-500/20 rounded-full"></div>
-                  {academics?.schedule ? academics.schedule.map((cls: any, i: number) => (
-                    <div key={i} className="flex gap-6 mb-6 relative">
-                      <div className="w-20 flex flex-col items-center shrink-0 bg-transparent z-10 py-1">
-                        <span className={`text-sm font-bold ${theme.textHeading}`}>{cls.time.split(" ")[0]}</span>
-                        <span className={`text-xs font-medium ${theme.textSub}`}>{cls.time.split(" ")[1]}</span>
-                      </div>
-                      <div className={`flex-1 border rounded-2xl p-4 shadow-sm transition-all ${theme.bgWidgetInner}`}>
-                        <h4 className={`font-bold text-sm mb-1 ${theme.textHeading}`}>{cls.course}: {cls.name}</h4>
-                        <div className={`flex items-center gap-4 text-xs font-medium ${theme.textSub}`}>
-                          <span className="flex items-center gap-1 text-blue-500"><BookOpen className="w-3 h-3" /> Lecture</span>
-                          <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {cls.location}</span>
-                        </div>
-                      </div>
-                    </div>
-                  )) : (
-                    <div className={`flex h-full items-center justify-center text-sm ${theme.textSub}`}>Loading academic schedule...</div>
-                  )}
-                </div>
-              </div>
-
-              {/* Widget: Upcoming Events */}
-              <div className={`backdrop-blur-xl rounded-3xl border shadow-lg overflow-hidden flex flex-col relative h-[320px] transition-colors ${theme.bgWidget}`}>
-                <div className={`p-5 border-b flex items-center justify-between bg-gradient-to-r from-pink-500/10 to-transparent ${isDarkMode ? 'border-slate-700' : 'border-white'}`}>
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-pink-500/20 text-pink-500 rounded-xl shadow-sm"><Calendar className="w-4 h-4" /></div>
-                    <h2 className={`font-semibold ${theme.textHeading}`}>Upcoming Events</h2>
-                  </div>
-                  <span className="text-xs font-semibold text-pink-500 bg-pink-500/10 px-2 py-1 rounded-md">Events</span>
-                </div>
-                <div className="p-6 overflow-y-auto custom-scrollbar flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  {events ? events.slice(0,4).map((evt: any, i: number) => (
-                    <div key={i} className={`flex items-start gap-3 p-4 border rounded-2xl shadow-sm hover:border-pink-500/50 hover:shadow-md transition-all ${theme.bgWidgetInner}`}>
-                      <div className="w-12 h-12 shrink-0 bg-pink-500/10 rounded-xl flex flex-col items-center justify-center">
-                        <span className="text-[10px] font-bold text-pink-500 uppercase">{evt.date.split(" ")[0]}</span>
-                        <span className={`text-sm font-bold ${theme.textHeading}`}>{evt.date.split(" ")[1] || "14"}</span>
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className={`font-bold text-xs mb-1 line-clamp-2 ${theme.textHeading}`}>{evt.title}</h4>
-                        <div className={`flex items-center gap-2 text-[10px] font-medium ${theme.textSub}`}>
-                          <span className="flex items-center gap-0.5 truncate"><MapPin className="w-3 h-3" /> {evt.location}</span>
-                        </div>
-                      </div>
-                    </div>
-                  )) : (
-                    <div className={`col-span-2 flex h-full items-center justify-center text-sm ${theme.textSub}`}>Loading events...</div>
-                  )}
-                </div>
-              </div>
-
-            </div>
-
-            {/* RIGHT COLUMN */}
-            <div className="flex flex-col gap-6 xl:w-5/12">
-              
-              {/* Widget: Cafeteria Menu */}
-              <div className={`backdrop-blur-xl rounded-3xl border shadow-lg overflow-hidden flex flex-col relative h-[320px] transition-colors ${theme.bgWidget}`}>
-                <div className={`p-5 border-b flex items-center justify-between bg-gradient-to-r from-orange-500/10 to-transparent ${isDarkMode ? 'border-slate-700' : 'border-white'}`}>
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-orange-500/20 text-orange-500 rounded-xl shadow-sm"><Coffee className="w-4 h-4" /></div>
-                    <h2 className={`font-semibold ${theme.textHeading}`}>Cafeteria Menu</h2>
-                  </div>
-                  <span className="text-xs font-semibold text-orange-500 bg-orange-500/10 px-2 py-1 rounded-md">Dining</span>
-                </div>
-                <div className="p-5 overflow-y-auto custom-scrollbar flex-1">
-                  <h3 className="text-[10px] font-bold tracking-widest text-orange-500 uppercase mb-3">Dinner Menu</h3>
-                  {cafeteria?.dinner ? cafeteria.dinner.map((item: any, i: number) => (
-                    <div key={i} className={`border rounded-2xl p-4 mb-3 shadow-sm transition-all hover:border-orange-500/50 ${theme.bgWidgetInner}`}>
-                      <div className="flex justify-between items-start mb-1">
-                        <div className="flex-1 min-w-0 pr-2">
-                          <h4 className={`font-bold text-sm truncate ${theme.textHeading}`}>{item.item}</h4>
-                          <div className="flex gap-1 mt-1">
-                             {item.tags?.includes("vegan") && <span className="w-1.5 h-1.5 rounded-full bg-green-500" title="Vegan"></span>}
-                             {item.tags?.includes("healthy") && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" title="Healthy"></span>}
-                             {item.tags?.includes("vegetarian") && <span className="w-1.5 h-1.5 rounded-full bg-green-400" title="Vegetarian"></span>}
-                          </div>
-                        </div>
-                        <span className="text-[10px] font-bold text-orange-500 bg-orange-500/10 px-2 py-1 rounded-lg border border-orange-500/20 shadow-sm shrink-0">{item.calories} cal</span>
-                      </div>
-                    </div>
-                  )) : (
-                    <div className={`flex h-full items-center justify-center text-sm ${theme.textSub}`}>Loading cafeteria menu...</div>
-                  )}
-                </div>
-              </div>
-
-              {/* Widget: Interdisciplinary Picks */}
-              <div className={`backdrop-blur-xl rounded-3xl border shadow-lg overflow-hidden flex flex-col relative flex-1 min-h-[300px] transition-colors ${theme.bgWidget}`}>
-                <div className={`p-5 border-b flex items-center justify-between bg-gradient-to-r from-violet-500/10 to-transparent ${isDarkMode ? 'border-slate-700' : 'border-white'}`}>
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-violet-500/20 text-violet-500 rounded-xl shadow-sm"><BookOpen className="w-4 h-4" /></div>
-                    <h2 className={`font-semibold ${theme.textHeading}`}>Library Picks</h2>
-                  </div>
-                  <span className="text-xs font-semibold text-violet-500 bg-violet-500/10 px-2 py-1 rounded-md">Library</span>
-                </div>
-                <div className="p-5 overflow-y-auto custom-scrollbar flex-1">
-                  {library ? library.slice(0,3).map((book: any, i: number) => (
-                    <div key={i} className={`mb-3 border rounded-2xl p-4 shadow-sm hover:border-violet-500/50 transition-all flex gap-3 items-center ${theme.bgWidgetInner}`}>
-                      <div className={`w-10 h-14 rounded-md shrink-0 border flex items-center justify-center overflow-hidden relative ${isDarkMode ? 'bg-slate-700 border-slate-600' : 'bg-slate-100 border-slate-200'}`}>
-                         <div className="absolute top-0 w-full h-1 bg-violet-400"></div>
-                         <BookOpen className={`w-4 h-4 ${isDarkMode ? 'text-slate-500' : 'text-slate-300'}`} />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h4 className={`font-bold text-xs mb-0.5 truncate ${theme.textHeading}`}>{book.title}</h4>
-                        <p className={`text-[10px] mb-1.5 truncate ${theme.textSub}`}>{book.author}</p>
-                        <div className="flex items-center gap-2">
-                          <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-green-500/10 text-green-500 border border-green-500/20 uppercase tracking-wider">Avail</span>
-                          <span className={`flex items-center gap-1 text-[9px] font-medium ${theme.textSub}`}><Sparkles className="w-2.5 h-2.5" /> Pick</span>
-                        </div>
-                      </div>
-                    </div>
-                  )) : (
-                    <div className={`flex h-full items-center justify-center text-sm ${theme.textSub}`}>Loading library picks...</div>
-                  )}
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </div>
-      </main>
-
-      {/* Right Sidebar: Assistant & Chat History */}
+      {/* 2. Middle Chat Sidebar */}
       <aside 
         style={{ width: sidebarWidth }}
-        className={`shrink-0 backdrop-blur-xl border-l flex flex-col z-20 shadow-[-4px_0_24px_rgba(0,0,0,0.04)] hidden lg:flex transition-colors relative overflow-hidden ${theme.bgSidebar}`}
+        className={`shrink-0 backdrop-blur-xl border-r flex flex-col z-20 shadow-[4px_0_24px_rgba(0,0,0,0.04)] hidden lg:flex transition-colors relative overflow-hidden ${theme.bgSidebar}`}
       >
-        {/* Resizer Handle */}
-        <div 
-          onMouseDown={() => setIsResizing(true)}
-          className={`absolute left-0 top-0 w-2 h-full cursor-col-resize z-50 flex items-center justify-center hover:bg-indigo-500/10 transition-colors group ${isResizing ? 'bg-indigo-500/20' : ''}`}
-        >
-          <div className="h-8 w-1 rounded-full bg-slate-300 dark:bg-slate-600 group-hover:bg-indigo-400 transition-colors" />
-        </div>
-        
         {/* Header */}
         <div className={`h-16 border-b flex items-center justify-between px-6 z-30 transition-colors ${theme.bgHeader}`}>
           <div className="flex items-center gap-3">
@@ -635,7 +416,222 @@ export default function Dashboard() {
             </button>
           </form>
         </div>
+
+        {/* Resizer Handle (Now on the Right) */}
+        <div 
+          onMouseDown={() => setIsResizing(true)}
+          className={`absolute right-0 top-0 w-2 h-full cursor-col-resize z-50 flex items-center justify-center hover:bg-indigo-500/10 transition-colors group ${isResizing ? 'bg-indigo-500/20' : ''}`}
+        >
+          <div className="h-8 w-1 rounded-full bg-slate-300 dark:bg-slate-600 group-hover:bg-indigo-400 transition-colors" />
+        </div>
       </aside>
+
+      {/* 3. Main Content Area (Widgets stacked vertically) */}
+      <main className="flex-1 flex flex-col min-w-0 relative z-0">
+        {/* Top Navbar */}
+        <header className={`h-16 backdrop-blur-md border-b flex items-center justify-end px-6 shadow-sm z-30 sticky top-0 transition-colors ${theme.bgHeader}`}>
+          <div className="flex items-center gap-4 text-slate-500 relative">
+            
+            {/* Notifications Dropdown */}
+            <div className="relative">
+              <button 
+                onClick={() => setShowNotifications(!showNotifications)}
+                className={`p-2 rounded-full transition-colors relative ${theme.btnHover} ${isDarkMode ? 'text-slate-300' : 'text-slate-500'}`}
+              >
+                <Bell className="w-5 h-5" />
+                <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-red-500 border border-white"></span>
+              </button>
+              
+              {showNotifications && (
+                <div className={`absolute right-0 mt-2 w-80 rounded-2xl shadow-xl border overflow-hidden z-50 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+                  <div className={`p-4 border-b font-semibold flex justify-between items-center ${isDarkMode ? 'border-slate-700 text-slate-100' : 'border-slate-100 text-slate-800'}`}>
+                    Notifications
+                    <span className="text-xs bg-indigo-500/10 text-indigo-500 px-2 py-1 rounded-md">2 New</span>
+                  </div>
+                  <div className="divide-y divide-slate-100 dark:divide-slate-700">
+                    <div className={`p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                      <p className="text-sm font-medium"><span className="text-pink-500">Event Update:</span> Tech Innovation Summit has been moved to the Main Auditorium.</p>
+                      <p className="text-[10px] text-slate-400 mt-1">10 mins ago</p>
+                    </div>
+                    <div className={`p-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors cursor-pointer ${isDarkMode ? 'text-slate-300' : 'text-slate-600'}`}>
+                      <p className="text-sm font-medium"><span className="text-blue-500">Academics:</span> CS 301 Data Structures begins in 15 minutes.</p>
+                      <p className="text-[10px] text-slate-400 mt-1">1 hour ago</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Theme Toggle */}
+            <button 
+              onClick={() => setIsDarkMode(!isDarkMode)}
+              className={`p-2 rounded-full transition-colors ${theme.btnHover} ${isDarkMode ? 'text-slate-300' : 'text-slate-500'}`}
+            >
+              {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </button>
+            
+            {/* Profile Dropdown */}
+            <div className="relative">
+              <button 
+                onClick={() => setShowProfile(!showProfile)}
+                className={`w-8 h-8 rounded-full border flex items-center justify-center transition-colors ${isDarkMode ? 'border-slate-700 bg-slate-800 text-slate-300 hover:bg-slate-700' : 'border-slate-300 bg-white/50 text-slate-500 hover:bg-white'}`}
+              >
+                <UserIcon className="w-4 h-4" />
+              </button>
+
+              {showProfile && (
+                <div className={`absolute right-0 mt-2 w-48 rounded-xl shadow-xl border overflow-hidden z-50 ${isDarkMode ? 'bg-slate-800 border-slate-700' : 'bg-white border-slate-200'}`}>
+                  <div className={`p-4 border-b ${isDarkMode ? 'border-slate-700' : 'border-slate-100'}`}>
+                    <p className={`text-sm font-bold ${theme.textHeading}`}>{session?.user?.name}</p>
+                    <p className={`text-xs ${theme.textSub}`}>{(session?.user as any)?.major || "Student"}</p>
+                  </div>
+                  <div className="p-2">
+                    <button onClick={() => signOut({ callbackUrl: '/' })} className={`w-full flex items-center gap-2 px-3 py-2 text-sm rounded-lg text-red-500 ${isDarkMode ? 'hover:bg-slate-700' : 'hover:bg-red-50'} transition-colors`}>
+                      <LogOut className="w-4 h-4" /> Sign Out
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
+
+          </div>
+        </header>
+
+        {/* Main Widgets: Stacked Vertically */}
+        <div className="flex-1 overflow-y-auto p-6 lg:p-8 custom-scrollbar relative z-0">
+          <div className="flex flex-col gap-6 max-w-4xl mx-auto pb-10">
+            
+            {/* Widget: Today's Classes */}
+            <div className={`backdrop-blur-xl rounded-3xl border shadow-lg overflow-hidden flex flex-col relative transition-colors ${theme.bgWidget}`}>
+              <div className={`p-5 border-b flex items-center justify-between bg-gradient-to-r from-blue-500/10 to-transparent ${isDarkMode ? 'border-slate-700' : 'border-white'}`}>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-500/20 text-blue-500 rounded-xl shadow-sm"><BookOpen className="w-4 h-4" /></div>
+                  <h2 className={`font-semibold ${theme.textHeading}`}>Today's Schedule</h2>
+                </div>
+                <span className="text-xs font-semibold text-blue-500 bg-blue-500/10 px-2 py-1 rounded-md">Academics</span>
+              </div>
+              <div className="p-6 relative">
+                <div className="absolute top-6 bottom-6 left-[39px] w-0.5 bg-slate-500/20 rounded-full"></div>
+                {academics?.schedule ? academics.schedule.map((cls: any, i: number) => (
+                  <div key={i} className="flex gap-6 mb-6 last:mb-0 relative">
+                    <div className="w-20 flex flex-col items-center shrink-0 bg-transparent z-10 py-1">
+                      <span className={`text-sm font-bold ${theme.textHeading}`}>{cls.time.split(" ")[0]}</span>
+                      <span className={`text-xs font-medium ${theme.textSub}`}>{cls.time.split(" ")[1]}</span>
+                    </div>
+                    <div className={`flex-1 border rounded-2xl p-4 shadow-sm transition-all ${theme.bgWidgetInner}`}>
+                      <h4 className={`font-bold text-sm mb-1 ${theme.textHeading}`}>{cls.course}: {cls.name}</h4>
+                      <div className={`flex items-center gap-4 text-xs font-medium ${theme.textSub}`}>
+                        <span className="flex items-center gap-1 text-blue-500"><BookOpen className="w-3 h-3" /> Lecture</span>
+                        <span className="flex items-center gap-1"><MapPin className="w-3 h-3" /> {cls.location}</span>
+                      </div>
+                    </div>
+                  </div>
+                )) : (
+                  <div className={`py-10 flex items-center justify-center text-sm ${theme.textSub}`}>Loading academic schedule...</div>
+                )}
+              </div>
+            </div>
+
+            {/* Widget: Upcoming Events */}
+            <div className={`backdrop-blur-xl rounded-3xl border shadow-lg overflow-hidden flex flex-col relative transition-colors ${theme.bgWidget}`}>
+              <div className={`p-5 border-b flex items-center justify-between bg-gradient-to-r from-pink-500/10 to-transparent ${isDarkMode ? 'border-slate-700' : 'border-white'}`}>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-pink-500/20 text-pink-500 rounded-xl shadow-sm"><Calendar className="w-4 h-4" /></div>
+                  <h2 className={`font-semibold ${theme.textHeading}`}>Upcoming Events</h2>
+                </div>
+                <span className="text-xs font-semibold text-pink-500 bg-pink-500/10 px-2 py-1 rounded-md">Events</span>
+              </div>
+              <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+                {events ? events.slice(0,4).map((evt: any, i: number) => (
+                  <div key={i} className={`flex items-start gap-3 p-4 border rounded-2xl shadow-sm hover:border-pink-500/50 hover:shadow-md transition-all ${theme.bgWidgetInner}`}>
+                    <div className="w-12 h-12 shrink-0 bg-pink-500/10 rounded-xl flex flex-col items-center justify-center">
+                      <span className="text-[10px] font-bold text-pink-500 uppercase">{evt.date.split(" ")[0]}</span>
+                      <span className={`text-sm font-bold ${theme.textHeading}`}>{evt.date.split(" ")[1] || "14"}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h4 className={`font-bold text-xs mb-1 line-clamp-2 ${theme.textHeading}`}>{evt.title}</h4>
+                      <div className={`flex items-center gap-2 text-[10px] font-medium ${theme.textSub}`}>
+                        <span className="flex items-center gap-0.5 truncate"><MapPin className="w-3 h-3" /> {evt.location}</span>
+                      </div>
+                    </div>
+                  </div>
+                )) : (
+                  <div className={`col-span-1 md:col-span-2 py-10 flex items-center justify-center text-sm ${theme.textSub}`}>Loading events...</div>
+                )}
+              </div>
+            </div>
+
+            {/* Widget: Cafeteria Menu */}
+            <div className={`backdrop-blur-xl rounded-3xl border shadow-lg overflow-hidden flex flex-col relative transition-colors ${theme.bgWidget}`}>
+              <div className={`p-5 border-b flex items-center justify-between bg-gradient-to-r from-orange-500/10 to-transparent ${isDarkMode ? 'border-slate-700' : 'border-white'}`}>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-orange-500/20 text-orange-500 rounded-xl shadow-sm"><Coffee className="w-4 h-4" /></div>
+                  <h2 className={`font-semibold ${theme.textHeading}`}>Cafeteria Menu</h2>
+                </div>
+                <span className="text-xs font-semibold text-orange-500 bg-orange-500/10 px-2 py-1 rounded-md">Dining</span>
+              </div>
+              <div className="p-6">
+                <h3 className="text-[10px] font-bold tracking-widest text-orange-500 uppercase mb-3">Dinner Menu</h3>
+                <div className="space-y-3">
+                  {cafeteria?.dinner ? cafeteria.dinner.map((item: any, i: number) => (
+                    <div key={i} className={`border rounded-2xl p-4 shadow-sm transition-all hover:border-orange-500/50 ${theme.bgWidgetInner}`}>
+                      <div className="flex justify-between items-start mb-1">
+                        <div className="flex-1 min-w-0 pr-2">
+                          <h4 className={`font-bold text-sm truncate ${theme.textHeading}`}>{item.item}</h4>
+                          <div className="flex gap-1 mt-1">
+                             {item.tags?.includes("vegan") && <span className="w-1.5 h-1.5 rounded-full bg-green-500" title="Vegan"></span>}
+                             {item.tags?.includes("healthy") && <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" title="Healthy"></span>}
+                             {item.tags?.includes("vegetarian") && <span className="w-1.5 h-1.5 rounded-full bg-green-400" title="Vegetarian"></span>}
+                          </div>
+                        </div>
+                        <span className="text-[10px] font-bold text-orange-500 bg-orange-500/10 px-2 py-1 rounded-lg border border-orange-500/20 shadow-sm shrink-0">{item.calories} cal</span>
+                      </div>
+                    </div>
+                  )) : (
+                    <div className={`py-10 flex items-center justify-center text-sm ${theme.textSub}`}>Loading cafeteria menu...</div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            {/* Widget: Interdisciplinary Picks */}
+            <div className={`backdrop-blur-xl rounded-3xl border shadow-lg overflow-hidden flex flex-col relative transition-colors ${theme.bgWidget}`}>
+              <div className={`p-5 border-b flex items-center justify-between bg-gradient-to-r from-violet-500/10 to-transparent ${isDarkMode ? 'border-slate-700' : 'border-white'}`}>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-violet-500/20 text-violet-500 rounded-xl shadow-sm"><BookOpen className="w-4 h-4" /></div>
+                  <h2 className={`font-semibold ${theme.textHeading}`}>Library Picks</h2>
+                </div>
+                <span className="text-xs font-semibold text-violet-500 bg-violet-500/10 px-2 py-1 rounded-md">Library</span>
+              </div>
+              <div className="p-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {library ? library.slice(0,3).map((book: any, i: number) => (
+                    <div key={i} className={`border rounded-2xl p-4 shadow-sm hover:border-violet-500/50 transition-all flex flex-col gap-3 ${theme.bgWidgetInner}`}>
+                      <div className="flex gap-3 items-center">
+                        <div className={`w-10 h-14 rounded-md shrink-0 border flex items-center justify-center overflow-hidden relative ${isDarkMode ? 'bg-slate-700 border-slate-600' : 'bg-slate-100 border-slate-200'}`}>
+                           <div className="absolute top-0 w-full h-1 bg-violet-400"></div>
+                           <BookOpen className={`w-4 h-4 ${isDarkMode ? 'text-slate-500' : 'text-slate-300'}`} />
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <h4 className={`font-bold text-xs mb-0.5 truncate ${theme.textHeading}`}>{book.title}</h4>
+                          <p className={`text-[10px] mb-1.5 truncate ${theme.textSub}`}>{book.author}</p>
+                          <div className="flex items-center gap-2">
+                            <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-green-500/10 text-green-500 border border-green-500/20 uppercase tracking-wider">Avail</span>
+                            <span className={`flex items-center gap-1 text-[9px] font-medium ${theme.textSub}`}><Sparkles className="w-2.5 h-2.5" /> Pick</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  )) : (
+                    <div className={`col-span-1 md:col-span-3 py-10 flex items-center justify-center text-sm ${theme.textSub}`}>Loading library picks...</div>
+                  )}
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </main>
 
     </div>
   );
