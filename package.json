@@ -1,0 +1,15 @@
+{
+  "name": "omnios-monorepo",
+  "version": "1.0.0",
+  "description": "Consolidated launchpad for OmniOS MCP microservices on Render",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "build": "npm install && (cd mcp-library && npm install) && (cd mcp-cafeteria && npm install) && (cd mcp-events && npm install) && (cd mcp-academics && npm install) && (cd mcp-memory && npm install)"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "http-proxy-middleware": "^3.0.0",
+    "cors": "^2.8.5"
+  }
+}
