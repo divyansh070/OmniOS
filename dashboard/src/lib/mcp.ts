@@ -8,11 +8,11 @@ if (typeof global !== 'undefined' && !global.EventSource) {
 }
 
 const servers = [
-  { name: "library", url: "http://localhost:3001/sse" },
-  { name: "cafeteria", url: "http://localhost:3002/sse" },
-  { name: "events", url: "http://localhost:3003/sse" },
-  { name: "academics", url: "http://localhost:3004/sse" },
-  { name: "memory", url: "http://localhost:3005/sse" },
+  { name: "library", url: process.env.MCP_LIBRARY_URL || "http://localhost:3001/sse" },
+  { name: "cafeteria", url: process.env.MCP_CAFETERIA_URL || "http://localhost:3002/sse" },
+  { name: "events", url: process.env.MCP_EVENTS_URL || "http://localhost:3003/sse" },
+  { name: "academics", url: process.env.MCP_ACADEMICS_URL || "http://localhost:3004/sse" },
+  { name: "memory", url: process.env.MCP_MEMORY_URL || "http://localhost:3005/sse" },
 ];
 
 const globalForMcp = globalThis as unknown as {
