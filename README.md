@@ -3,7 +3,7 @@
   <p><strong>The Unified Campus Intelligence Platform</strong></p>
 
   <p>
-    <a href="https://omni-os-mcp-academics-k46o.vercel.app/dashboard"><strong>View Live Demo</strong></a> · 
+    <a href="https://omni-os-mcp-academics-k46o.vercel.app"><strong>View Live Demo</strong></a> · 
     <a href="#-core-features">Explore Features</a> · 
     <a href="#-quick-start">Installation</a>
   </p>
